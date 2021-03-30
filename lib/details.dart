@@ -14,6 +14,7 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
+  String name, email, url, location;
   @override
   void initState() {
     super.initState();
@@ -25,8 +26,12 @@ class _DetailPageState extends State<DetailPage> {
         .collection("Users")
         .doc(widget.id)
         .get();
-
-    String name = documents.data()["N"].toString();
+    setState(() {
+      name = documents.data()["N"].toString();
+      email = documents.data()["E"].toString();
+      url = documents.data()["I"].toString();
+      location = documents.data()["L"].toString();
+    });
 
     print(name);
   }
@@ -50,30 +55,41 @@ class _DetailPageState extends State<DetailPage> {
                   width: 130,
                   height: 130,
                   decoration: BoxDecoration(
-                    border: Border.all(
-                        width: 4,
-                        color: Theme.of(context).scaffoldBackgroundColor),
-                    boxShadow: [
-                      BoxShadow(
-                          spreadRadius: 2,
-                          blurRadius: 10,
-                          color: Colors.black.withOpacity(0.1),
-                          offset: Offset(0, 10))
-                    ],
-                    shape: BoxShape.circle,
-                    // image: DecorationImage(
-                    //     fit: BoxFit.cover,
-                    //     image: _image == null
-                    //         ? NetworkImage(
-                    //             "https://images.pexels.com/photos/3307758/pexels-photo-3307758.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=250",
-                    //           )
-                    //         : FileImage(_image))
-                  ),
+                      border: Border.all(
+                          width: 4,
+                          color: Theme.of(context).scaffoldBackgroundColor),
+                      boxShadow: [
+                        BoxShadow(
+                            spreadRadius: 2,
+                            blurRadius: 10,
+                            color: Colors.black.withOpacity(0.1),
+                            offset: Offset(0, 10))
+                      ],
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: url == null
+                              ? NetworkImage(
+                                  "https://images.pexels.com/photos/3307758/pexels-photo-3307758.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=250",
+                                )
+                              : NetworkImage(url))),
                 ),
               ),
               SizedBox(
                 height: 35,
               ),
+              Text(
+                name,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                email,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                location,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+              )
             ],
           ),
         ),

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +29,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final picker = ImagePicker();
   FirebaseStorage _storage = FirebaseStorage.instance;
   String url;
-  void getImage() async {
+
+  Future getImage() async {
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
     setState(() {
       if (pickedFile != null) {
@@ -36,23 +39,62 @@ class _EditProfilePageState extends State<EditProfilePage> {
         print('No image selected.');
       }
     });
-    Reference reference = _storage.ref().child("images/");
-    UploadTask uploadTask = reference
-        .child('image1' + DateTime.now().toString())
-        .putFile(_image)
-        .whenComplete(() async {
-      var Url = (await FirebaseStorage.instance
-              .ref('images/image12021-03-26 11:17:37.406468')
-              .getDownloadURL())
-          .toString();
-      setState(() {
-        url = Url;
-        print("URL:$url");
-      });
-      // print(url);
-      // return url;
-    });
+    _uploadImageToFirebase(_image);
   }
+
+  Future<void> _uploadImageToFirebase(File image) async {
+    try {
+      // Make random image name.
+      int randomNumber = Random().nextInt(100000);
+      String imageLocation = 'images/image${randomNumber}.jpg';
+
+      // Upload image to firebase.
+      Reference reference = _storage.ref().child(imageLocation);
+      UploadTask uploadTask = reference.putFile(image).whenComplete(() {
+        _addPathToDatabase(imageLocation);
+      });
+    } catch (e) {
+      print(e.message);
+    }
+  }
+
+  Future<void> _addPathToDatabase(String txt) async {
+    try {
+      final ref = _storage.ref().child(txt);
+      url = await ref.getDownloadURL();
+      print("URLs:$url");
+      //  await db.collection('users').doc().set({'url':imageString , 'location':txt});
+    } catch (err) {
+      print("Error:$err");
+    }
+  }
+
+  // void getImage() async {
+  //   final pickedFile = await picker.getImage(source: ImageSource.gallery);
+  //   setState(() {
+  //     if (pickedFile != null) {
+  //       _image = File(pickedFile.path);
+  //     } else {
+  //       print('No image selected.');
+  //     }
+  //   });
+  //   Reference reference = _storage.ref().child("images/");
+  //   UploadTask uploadTask = reference
+  //       .child('image1' + DateTime.now().toString())
+  //       .putFile(_image)
+  //       .whenComplete(() async {
+  //     var Url = (await FirebaseStorage.instance
+  //             .ref('images/image12021-03-26 11:17:37.406468')
+  //             .getDownloadURL())
+  //         .toString();
+  //     setState(() {
+  //       url = Url;
+  //       print("URL:$url");
+  //     });
+  //     // print(url);
+  //     // return url;
+  //   });
+  // }
 
   getUserLocation() async {
     //call this async method from whereever you need
